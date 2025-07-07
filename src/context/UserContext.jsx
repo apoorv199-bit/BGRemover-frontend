@@ -20,16 +20,28 @@ const UserContextProvider = (props) => {
   const loadUserCredits = async () => {
     try {
       const token = await getToken();
+
+      if (!token) {
+        toast.error("Please log in to view your credits");
+        return;
+      }
+
       const response = await axios.get(backendUrl + "/users/credits", {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       if (response.data.success) {
         setCredit(response.data.data.credits);
       } else {
-        toast.error(response.data.data);
+        const errorMessage = response.data.message || "Failed to load credits";
+        toast.error(errorMessage);
       }
     } catch (error) {
-      toast.error("Error loading credits");
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Unable to fetch credits. Please try again later.";
+      toast.error(message);
     }
   };
 
@@ -46,17 +58,45 @@ const UserContextProvider = (props) => {
       const token = await getToken();
       const formData = new FormData();
       selectedImage && formData.append("file", selectedImage);
-      const { data: base64Image } = await axios.post(
+      const response = await axios.post(
         backendUrl + "/images/remove-background",
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setResultImage(`data:image/png;base64, ${base64Image}`);
-      setCredit(credit - 1);
+      if (response.data.success) {
+        const base64Image = response.data.data;
+        setResultImage(`data:image/png;base64,${base64Image}`);
+        setCredit((prev) => prev - 1);
+
+        toast.success(
+          response.data.message || "Background removed successfully!"
+        );
+      } else {
+        if (response.data.statusCode === 402) {
+          toast.error("Insufficient credits to process image");
+          navigate("/buy-credits");
+        } else {
+          toast.error(response.data.message || "Failed to remove background");
+        }
+      }
     } catch (error) {
-      console.log(error);
-      toast.error("Error while removing background");
+      const status = error?.response?.status;
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Error while removing background";
+
+      if (status === 400) {
+        toast.error(message);
+      } else if (status === 402) {
+        toast.error("Insufficient credits to process image");
+        navigate("/pricing");
+      } else if (status === 403) {
+        toast.error("File too large. Maximum allowed size is 30MB.");
+      } else {
+        toast.error(message);
+      }
     }
   };
 
