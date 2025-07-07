@@ -1,5 +1,4 @@
-import { useContext, useState } from "react";
-import { AppContext } from "../context/AppContext";
+import { useContext } from "react";
 import toast from "react-hot-toast";
 import useDragAndDrop from "../customHooks/useDragAndDrop";
 import { UserContext } from "../context/UserContext";

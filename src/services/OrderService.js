@@ -9,21 +9,34 @@ export const placeOrder = async ({
 }) => {
   try {
     const token = await getToken();
+
+    if (!token) {
+      toast.error("Authentication failed. Please log in again");
+      return;
+    }
+
     const response = await axios.post(
       `${backendUrl}/orders?planId=${planId}`,
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
-    if (response.status === 201) {
+
+    if (response.status === 201 && response.data?.success) {
       initializePayment({
         order: response.data.data,
         getToken,
         onSuccess,
         backendUrl,
       });
+    } else {
+      toast.error(response.data?.message || "Failed to create order");
     }
   } catch (error) {
-    toast.error(error?.message);
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Something went wrong";
+    toast.error(message);
   }
 };
 
@@ -44,12 +57,19 @@ const initializePayment = ({ order, getToken, onSuccess, backendUrl }) => {
           paymentDetails,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        if (response.status === 200) {
-          toast.success("Credits added");
+
+        if (response.status === 200 && response.data?.success) {
+          toast.success(response.data.message || "Credits added successfully");
           onSuccess?.();
+        } else {
+          toast.error(response.data?.message || "Payment verification failed");
         }
       } catch (error) {
-        toast.error(error?.message);
+        const message =
+          error?.response?.data?.message ||
+          error?.message ||
+          "Payment verification failed";
+        toast.error(message);
       }
     },
   };

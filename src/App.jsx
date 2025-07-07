@@ -6,7 +6,6 @@ import { Toaster } from "react-hot-toast";
 import UserSyncHandler from "./components/UserSyncHandler";
 import Result from "./pages/Result";
 import { RedirectToSignIn, SignedIn, SignedOut } from "@clerk/clerk-react";
-import BuyCredits from "./pages/BuyCredits";
 import Pricing from "./components/Pricing";
 
 const App = () => {

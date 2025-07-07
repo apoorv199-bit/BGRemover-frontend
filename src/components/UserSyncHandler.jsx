@@ -19,6 +19,11 @@ const UserSyncHandler = () => {
       try {
         const token = await getToken();
 
+        if (!token) {
+          toast.error("Authentication failed. Please log in again");
+          return;
+        }
+
         const userData = {
           clerkId: user.id,
           email: user.primaryEmailAddress.emailAddress,
@@ -27,15 +32,24 @@ const UserSyncHandler = () => {
           photoUrl: user.imageUrl,
         };
 
-        await axios.post(backendUrl + "/users", userData, {
+        const response = await axios.post(backendUrl + "/users", userData, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setSynced(true);
-        await loadUserCredits();
+        if (response.data.success) {
+          setSynced(true);
+          await loadUserCredits();
+        } else {
+          const errorMessage =
+            response.data.message || "Failed to sync user data";
+          toast.error(errorMessage);
+        }
       } catch (error) {
-        console.error("User sync failed", error);
-        toast.error("User sync failed. Please try again!");
+        const message =
+          error?.response?.data?.message ||
+          error?.message ||
+          "User sync failed. Please try again later.";
+        toast.error(message);
       }
     };
 
