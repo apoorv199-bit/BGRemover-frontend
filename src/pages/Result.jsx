@@ -36,7 +36,7 @@ const Result = () => {
             <p className="font-semibold text-gray-700 dark:text-gray-200 mb-2">
               Background Removed
             </p>
-            <div className="rounded-md border border-gray-300 dark:border-gray-700 h-full bg-layer relative overflow-hidden">
+            <div className="rounded-md border border-gray-300 dark:border-gray-700 min-h-[16rem] md:h-full bg-layer relative overflow-hidden">
               {resultImage ? (
                 <img
                   src={resultImage}
