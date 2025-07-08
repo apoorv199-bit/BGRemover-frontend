@@ -7,7 +7,7 @@ import TryNow from "../components/TryNow";
 
 const Home = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 font-['Outfit']">
+    <div className="max-w-7xl mx-auto px-4 pb-10 sm:px-6 lg:px-8 lg:py-16 font-['Outfit']">
       {/* Hero Section */}
       <Header />
       {/* Background removal steps section */}
