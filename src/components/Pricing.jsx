@@ -1,20 +1,23 @@
 import { useAuth, useClerk } from "@clerk/clerk-react";
 import { plans } from "../assets/assets";
 import { placeOrder } from "../services/OrderService";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { UserContext } from "../context/UserContext";
 
 const Pricing = () => {
   const { isSignedIn, getToken } = useAuth();
   const { openSignIn } = useClerk();
   const { loadUserCredits, backendUrl } = useContext(UserContext);
+  const [loadingPlanId, setLoadingPlanId] = useState(null);
 
-  const handleOrder = (planId) => {
+  const handleOrder = async (planId) => {
     if (!isSignedIn) {
       return openSignIn();
     }
 
-    placeOrder({
+    setLoadingPlanId(planId);
+
+    await placeOrder({
       planId,
       getToken,
       onSuccess: () => {
@@ -22,6 +25,8 @@ const Pricing = () => {
       },
       backendUrl,
     });
+
+    setLoadingPlanId(null);
   };
 
   return (
@@ -76,9 +81,14 @@ const Pricing = () => {
                 </ul>
                 <button
                   onClick={() => handleOrder(plan.id)}
-                  className="w-full py-3 px-6 text-center text-white font-semibold rounded-full bg-gradient-to-r from-violet-600 to-pink-500 shadow-lg hover:from-violet-700 hover:to-pink-600 transition duration-300 ease-in-out transform hover:scale-105 cursor-pointer"
+                  disabled={loadingPlanId === plan.id}
+                  className={`w-full py-3 px-6 text-center font-semibold rounded-full shadow-lg transition duration-300 ease-in-out transform cursor-pointer ${
+                    loadingPlanId === plan.id
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-700 hover:to-pink-600 hover:scale-105 text-white"
+                  }`}
                 >
-                  Choose plan
+                  {loadingPlanId === plan.id ? "Processing..." : "Choose plan"}
                 </button>
               </div>
             </div>

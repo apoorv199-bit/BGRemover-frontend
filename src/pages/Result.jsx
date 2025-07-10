@@ -1,10 +1,16 @@
-import { useContext } from "react";
-import { AppContext } from "../context/AppContext";
+import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../context/UserContext";
 
 const Result = () => {
-  const { image, resultImage } = useContext(AppContext);
+  const { image, resultImage } = useContext(UserContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!image) {
+      navigate("/", { replace: true });
+    }
+  }, [image]);
 
   return (
     <div className="mx-4 my-3 lg:mx-44 mt-10 mb-10 min-h-[75vh]">
@@ -37,28 +43,11 @@ const Result = () => {
               Background Removed
             </p>
             <div className="rounded-md border border-gray-300 dark:border-gray-700 min-h-[16rem] md:h-full bg-layer relative overflow-hidden">
-              {resultImage ? (
-                <img
-                  src={resultImage}
-                  alt="result"
-                  className="w-full object-cover"
-                />
-              ) : (
-                <>
-                  {image && (
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                      <div className="border-4 border-violet-600 rounded-full h-12 w-12 border-t-transparent animate-spin"></div>
-                    </div>
-                  )}
-                  {!image && (
-                    <div className="h-64 flex items-center justify-center">
-                      <p className="text-gray-500 dark:text-gray-400">
-                        Result will appear here
-                      </p>
-                    </div>
-                  )}
-                </>
-              )}
+              <img
+                src={resultImage}
+                alt="result"
+                className="w-full object-cover"
+              />
             </div>
           </div>
         </div>
