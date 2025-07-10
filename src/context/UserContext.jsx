@@ -3,22 +3,24 @@ import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { AppContext } from "./AppContext";
 
 export const UserContext = createContext();
 
 const UserContextProvider = (props) => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  const [credit, setCredit] = useState(false);
+  const [credit, setCredit] = useState(null);
+  const [loadingCredits, setLoadingCredits] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [image, setImage] = useState(null);
+  const [resultImage, setResultImage] = useState(null);
   const { getToken } = useAuth();
   const { isSignedIn } = useUser();
   const { openSignIn } = useClerk();
   const navigate = useNavigate();
 
-  const { setImage, setResultImage } = useContext(AppContext);
-
   const loadUserCredits = async () => {
     try {
+      setLoadingCredits(true);
       const token = await getToken();
 
       if (!token) {
@@ -42,6 +44,8 @@ const UserContextProvider = (props) => {
         error?.message ||
         "Unable to fetch credits. Please try again later.";
       toast.error(message);
+    } finally {
+      setLoadingCredits(false);
     }
   };
 
@@ -52,12 +56,13 @@ const UserContextProvider = (props) => {
       }
 
       setImage(selectedImage);
-      setResultImage(false);
-      navigate("/result");
+      setResultImage(null);
+      setIsProcessing(true);
 
       const token = await getToken();
       const formData = new FormData();
       selectedImage && formData.append("file", selectedImage);
+
       const response = await axios.post(
         backendUrl + "/images/remove-background",
         formData,
@@ -72,13 +77,7 @@ const UserContextProvider = (props) => {
         toast.success(
           response.data.message || "Background removed successfully!"
         );
-      } else {
-        if (response.data.statusCode === 402) {
-          toast.error("Insufficient credits to process image");
-          navigate("/buy-credits");
-        } else {
-          toast.error(response.data.message || "Failed to remove background");
-        }
+        navigate("/result");
       }
     } catch (error) {
       const status = error?.response?.status;
@@ -91,12 +90,14 @@ const UserContextProvider = (props) => {
         toast.error(message);
       } else if (status === 402) {
         toast.error("Insufficient credits to process image");
-        navigate("/pricing");
+        navigate("/buy-credits");
       } else if (status === 403) {
         toast.error("File too large. Maximum allowed size is 30MB.");
       } else {
         toast.error(message);
       }
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -106,6 +107,10 @@ const UserContextProvider = (props) => {
     backendUrl,
     loadUserCredits,
     removeBg,
+    loadingCredits,
+    isProcessing,
+    image,
+    resultImage,
   };
 
   return (

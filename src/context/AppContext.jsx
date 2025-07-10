@@ -7,9 +7,6 @@ const AppContextProvider = (props) => {
     return localStorage.getItem("theme") || "light";
   });
 
-  const [image, setImage] = useState(false);
-  const [resultImage, setResultImage] = useState(false);
-
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
@@ -22,10 +19,6 @@ const AppContextProvider = (props) => {
   const contextValue = {
     theme,
     toggleTheme,
-    image,
-    setImage,
-    resultImage,
-    setResultImage,
   };
 
   return (
